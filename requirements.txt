@@ -1,0 +1,6 @@
+flask 
+openai 
+pymongo 
+python-dotenv 
+sentence-transformers 
+faiss-cpu 
