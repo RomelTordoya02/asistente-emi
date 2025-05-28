@@ -1,0 +1,16 @@
+flask
+flask-cors
+python-dotenv
+pymongo
+transformers
+huggingface-hub
+scikit-learn
+nltk
+torch
+datasets
+peft
+pandas
+accelerate
+num2words
+openai
+python-dotenv
