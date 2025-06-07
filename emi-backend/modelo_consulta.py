@@ -11,9 +11,10 @@ from scripts.api_llm import consultar_openai
 from scripts.api_llm import responder_con_faiss_y_openai
 from typing import List, Dict
 
-
-
-
+class ModeloConsultaEMI:
+    def generar_respuesta(self, pregunta, contexto_extra=""):
+        respuesta = responder_con_faiss_y_openai(pregunta)
+        return respuesta
 
 def ordinal_es(n: int) -> str:
     """Convierte un número en su forma ordinal en español de forma dinámica."""
@@ -290,6 +291,7 @@ class ModeloConsultaEMI:
 
     def manejar_memoria_conversacional(self, pregunta_limpia: str) -> bool:
         if self.contexto_conversacion['sugerencias_previas'] or self.contexto_conversacion['ultimo_articulo']:
+            # Si la pregunta indica selección ordinal o mención directa del RAC, seguir con memoria
             if re.search(r'\b(primero|segundo|tercero|cuarto|quinto|sexto|séptimo|octavo|noveno|décimo)\b',
                          pregunta_limpia):
                 return True
@@ -298,6 +300,19 @@ class ModeloConsultaEMI:
             palabras_confirmacion = ['sí', 'si', 'okay', 'ok', 'de acuerdo']
             if any(p in pregunta_limpia for p in palabras_confirmacion):
                 return True
+
+            # 🔄 Si no hay relación aparente con artículo ni RAC, limpiar memoria automáticamente
+            if not re.search(r'\bart[ií]culo\b', pregunta_limpia) and not re.search(r'\brac[- :]?0?(\d+)(?!\d)',
+                                                                                    pregunta_limpia):
+                print("🧹 Pregunta no relacionada. Reiniciando memoria conversacional.")
+                self.contexto_conversacion = {
+                    'ultima_consulta': None,
+                    'ultimo_articulo': None,
+                    'ultimo_rac': None,
+                    'sugerencias_previas': []
+                }
+                return False
+
         return False
 
     def responder_desde_memoria(self, pregunta_limpia: str) -> str:
